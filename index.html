@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURRENCY CONVERTOR</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <main>
+        <div class="container">
+            <input type="number" name="" id="inp" placeholder="Enter currency quantity">
+            <select name="" id="selectFrom">
+            </select>
+            <select name="" id="selectTo">
+            </select>
+            <div id="result"></div>
+            <button id="btn">Converter</button>
+        </div>
+    </main>
+    <script>
+        let div = document.getElementById("div");
+        let selectFrom = document.getElementById('selectFrom');
+        let selectTo = document.getElementById('selectTo');
+        let inp = document.getElementById("inp");
+        const host = 'api.frankfurter.app';
+
+        let fetchCurrencies = async () => {
+            let link = await fetch(`https://${host}/currencies`);
+            let res = await link.json();
+            return res;
+        }
+
+        let appendOptions = async () => {
+            let currencies = await fetchCurrencies();
+
+            for (let currencyCode in currencies) {
+                let optionFrom = document.createElement('option');
+                optionFrom.value = currencyCode;
+                optionFrom.textContent = `${currencyCode} - ${currencies[currencyCode]}`;
+
+                let optionTo = document.createElement('option');
+                optionTo.value = currencyCode;
+                optionTo.textContent = `${currencyCode} - ${currencies[currencyCode]}`;
+
+                selectFrom.appendChild(optionFrom);
+                selectTo.appendChild(optionTo);
+            }
+        }
+
+        let fetchDataAndDisplay = async (fromCurrency, toCurrency) => {
+            let link = await fetch(`https://${host}/latest?amount=1&from=${fromCurrency}&to=${toCurrency}`);
+            let data = await link.json();
+            console.log(data, 'DATA')
+            return data.rates[toCurrency];
+        }
+        appendOptions();
+
+        let btn = document.getElementById('btn');
+        let resultDiv = document.getElementById('result');
+        btn.addEventListener('click', async () => {
+            let fromCurrency = selectFrom.value;
+            let toCurrency = selectTo.value;
+
+            if (fromCurrency != toCurrency) {
+                let conversionRate = await fetchDataAndDisplay(fromCurrency, toCurrency);
+                let amount = inp.value;
+                console.log(amount, 'amount')
+                let convertedAmount = amount * conversionRate;
+                resultDiv.textContent = `${amount} ${fromCurrency} = ${convertedAmount.toFixed(2)} ${toCurrency}`;
+            }
+            else{
+                alert("Same currencies are not converted!")
+            }
+        });
+    </script>
+</body>
+
+</html>
